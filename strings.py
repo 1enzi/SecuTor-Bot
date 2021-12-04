@@ -10,6 +10,5 @@ clusterURL = 'mongodb://admin:pass@cluster0-shard-00-00.2tl16.mongodb.net:27017,
 userNotFound = 'Упс! Кажется, Вы не зарегистрированы в системе. Зарегистрируемся?'
 userFound = 'Авторизация прошла успешно, можно приступать к обучению!'
 initialization = 'Секунду, инициализирую тебя...'
-register = 'Зарегистрироваться в системе'
+start_message = 'Начать!'
 
-reg_name = 'Как тебя можно называть?'
