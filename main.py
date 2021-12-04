@@ -39,7 +39,7 @@ db = DataBase()
 def start_message(message):
     user = db.get_user(message.chat.id)
 
-    bot.send_message(message.chat.id, ('Привет, ' + main_user.get_first_name + '!'))
+    bot.send_message(message.chat.id, ('Привет, ' + message.from_user.first_name + '!'))
     bot.send_message(message.chat.id, strings.initialization)
 
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -66,7 +66,9 @@ def get_help(message):
 
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
-    if message == strings.start_message:
+    content = message.text
+
+    if content == strings.start_message:
         open_main_menu(message)
     else:
         bot.send_message(message.chat.id, strings.unsignedMessage)
