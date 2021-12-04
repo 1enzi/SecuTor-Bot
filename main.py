@@ -1,9 +1,11 @@
+# Импорт необходимых библиотек
 import telebot
 import pymongo
 from pymongo import MongoClient
 from telebot import types
 import config
 import strings
+import register
 
 bot = telebot.TeleBot(config.TESTTOKEN)
 
@@ -15,16 +17,19 @@ class DataBase:
         self.db = cluster["SecuTor"]
         self.users = self.db["SecuTor"]
 
-    def get_user(self, chat_id):
-        user = self.users.find_one({"chat_id": chat_id})
+    def get_user(self, message):
+        from_user = message.from_user
+        user = self.users.find_one({"user_id": from_user.id})
 
         if user is not None:
             return user
 
         else:
             user = {
-                "chat_id": chat_id,
-                "task_index": None
+                "user_id": from_user.id,
+                "first_name": from_user.first_name,
+                "last_name": from_user.last_name,
+                "knowledge": {strings.passwordsAndLogins: [0], strings.webAndInternet: 0, strings.computerSafety: 0}
             }
 
             self.users.insert_one(user)
@@ -37,7 +42,7 @@ db = DataBase()
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    user = db.get_user(message.chat.id)
+    user = db.get_user(message)
 
     bot.send_message(message.chat.id, ('Привет, ' + message.from_user.first_name + '!'))
     bot.send_message(message.chat.id, strings.initialization)
@@ -45,7 +50,7 @@ def start_message(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     menu_one = types.KeyboardButton(strings.start_message)
     markup.add(menu_one)
-    bot.send_message(user["chat_id"], strings.userFound, reply_markup=markup)
+    bot.send_message(user["user_id"], strings.userFound, reply_markup=markup)
 
 
 def open_main_menu(message):
@@ -70,8 +75,15 @@ def get_text_messages(message):
 
     if content == strings.start_message:
         open_main_menu(message)
+
+    elif content == strings.regTraining:
+        register.registerProcedure(bot, message)  # Отлов кейса при выборе тренинга
+
+    elif content == strings.backToMenu:
+        start_message(message)  # Отлов кейса при возврате в главное меню
+
     else:
-        bot.send_message(message.chat.id, strings.unsignedMessage)
+        bot.send_message(message.chat.id, strings.unsignedMessage)  # Отправка сообщения что бот не знает что ответить при недетерминированных кейсах
 
 
 bot.polling(none_stop=True, interval=0)
